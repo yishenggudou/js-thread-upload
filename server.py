@@ -21,7 +21,15 @@ def index():
 @post('/file/:name')
 def handlepost(name=""):
     print request.files.data
-    data = request.files.data
+    print request.headers.items()
+    pos = request.headers.get('Range').split('-')
+    filename = request.headers.get('Filename')
+    print pos
+    print request.POST.items()
+    data = request.files.data or (request.POST.values() and request.POST.items()[0] or None)
+    with open(os.path.join(PROJECT_PATH,filename),'a+') as F:
+       F.seek(int(pos[0]))
+       F.write(data)
     if  data and data.file:
         raw = data.file.read()
         print raw
