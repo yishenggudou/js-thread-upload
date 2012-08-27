@@ -18,6 +18,10 @@ PROJECT_PATH = os.path.split(os.path.abspath(__file__))[0]
 def index():
     return  static_file('upload.html',PROJECT_PATH)
 
+@post('/tasks')
+def hand():
+    return "[]"
+
 @post('/file/:name')
 def handlepost(name=""):
     print request.files.data
@@ -28,13 +32,12 @@ def handlepost(name=""):
     print request.POST.items()
     data = request.files.data or (request.POST.values() and request.POST.items()[0] or None)
     with open(os.path.join(PROJECT_PATH,filename),'a+') as F:
-       F.seek(int(pos[0]))
-       F.write(data)
-    if  data and data.file:
-        raw = data.file.read()
-        print raw
-        return "You uploaded (%d bytes)." % (len(raw))
-    return "You missed a field."
+        F.seek(int(pos[0]))
+        try:
+            F.write(data)
+        except:
+            pass
+    return "ok"
 
 @route('/static/js/<path:path>')
 def callback(path):

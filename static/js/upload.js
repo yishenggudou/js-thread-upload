@@ -20,11 +20,38 @@ $(document).ready(function(){
             var uploaddir = '/file/';
             var url = uploaddir + fileobj.name
             window.buffs = buffs;
+            //用于上传之前获取contlength
+            //URL :
+            var URL = 'http://qss.qiyi.domain/upx',list = [],worker_tasks=[];
             for  (var i=0;i<=parseInt(result.byteLength/step)+1;i++){
-                var buff = result.slice(i*step,(i+1)*step);
-                worker.postMessage({buff:buff,url:url,range:[i*step,(i+1)*step]})
-                //console.log(['revice a buff from worker',buff,url]);
-            }
+                list.push([i*step,(i+1)*step]);
+                }
+            $.ajax({
+                type:"POST",
+                url:URL,
+                data:{file_size:result.byteLength,files:list},
+                dataType:'json',
+                crossDomain: true,
+                success:function(data){
+                    console.log(["revice task from serer",data]);
+                    var url="http://qss.qiyi.domain/upu";
+                    for  (task_id in data.bitmap){
+                        task  = data.bitmap[task_id];
+                        data.task_id = task_id;
+                        var buff = result.slice(task[1],task[2]);
+                        var work = {worker_index:task_id,buff:buff,url:url,task:task,upx:data};
+                        console.log(work,buff);
+                        worker.postMessage(work)
+                        //console.log(['revice a buff from worker',buff,url]);
+                        worker.onmessage = function(e){
+                            worker_tasks.push(e.data);
+                            if (!e.data.status){
+                                worker.postMessage(wrok)
+                            }                         
+                        }
+                    }
+                }
+            });
          }
          return false;
      })

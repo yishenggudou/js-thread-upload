@@ -30,15 +30,24 @@ Content-Disposition: form-data; name="done"
 done
 -----------------------------7d03135102b8--
 */
-function sendbuff (url,buff,range){
+
+
+/*
+* worker available https://developer.mozilla.org/en-US/docs/DOM/Worker/Functions_available_to_workers
+*/
+
+
+function sendbuff (worker_index,url,buff,task,upx){
       var xmlhttp=new XMLHttpRequest();
       xmlhttp.open('POST',url,true);
       var boundary = "xxxxxxxxx";
       var filename = "qsstest";
       //http://www.endum.net/xmlhttprequestsend-files-without-multipart-fo
-      xmlhttp.setRequestHeader("range",''+range[0]+'-'+range[1]);
-      xmlhttp.setRequestHeader("filename",filename);
-      /*
+      xmlhttp.setRequestHeader("File-Range",''+task[1]+'-'+task[2]);
+      xmlhttp.setRequestHeader("Filename",filename);
+      var task_info = upx.fid+'_'+upx.task_id+'_'+task[1]+'-'+task[2]+'_'+task[3]
+      xmlhttp.setRequestHeader("Task-Info",task_info);
+      /* 自己组装post 的body
       xmlhttp.setRequestHeader("Content-Type", "multipart/form-data, boundary="+boundary);
       var body = "--" + boundary + "--\r\n";
       body += 'Content-Disposition: form-data; name="contents"; filename="' + filename + '"\r\n';
@@ -52,7 +61,21 @@ function sendbuff (url,buff,range){
       bb.append(buff);
       xmlhttp.send(bb.getBlob());
       */
+      
+      //xmlrequest post event example see http://www.html5rocks.com/en/tutorials/file/xhr2/
+      //https://developer.mozilla.org/es/docs/XMLHttpRequest/Usar_XMLHttpRequest
+      // http://mozilla.com.cn/post/34886/
+      xmlhttp.onload = function(e){
+            if (this.status == 200) {
+                    self.postMessage({worker_index:worker_index,status:true});               
+                }
+            else{
+                    self.postMessage({worker_index:worker_index,status:false});               
+                }
+        }
+
       xmlhttp.send(buff);
+        
       //xmlhttp.sendAsBinary(buff);
       //http://blog.kotowicz.net/2011/04/how-to-upload-arbitrary-file-contents.html
  };
@@ -61,7 +84,7 @@ self.onmessage = function (oEvent) {
         //oEvent.data is a {buff:BuffArraay;url:'/'} like object;
         var buff = oEvent.data.buff;
         var url = oEvent.data.url;
-        sendbuff(url,buff,oEvent.data.range);
+        sendbuff(oEvent.data.worker_index,url,buff,oEvent.data.task,oEvent.data.upx);
   } else {
     //pass
   }
