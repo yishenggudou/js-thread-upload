@@ -37,6 +37,15 @@ done
 */
 
 
+
+
+//https://developer.mozilla.org/en-US/docs/DOM/Using_web_workers?redirectlocale=en-US&redirectslug=Using_web_workers
+//importScripts("/static/js/formdata.js)
+importScripts("/static/js/xhr-formdata.js")
+
+//fordata see:https://github.com/francois2metz/html5-formdata
+//http://stackoverflow.com/questions/4093722/upload-a-file-in-a-google-chrome-extension
+
 function sendbuff (worker_index,url,buff,task,upx){
       var xmlhttp=new XMLHttpRequest();
       xmlhttp.open('POST',url,true);
@@ -47,6 +56,8 @@ function sendbuff (worker_index,url,buff,task,upx){
       xmlhttp.setRequestHeader("Filename",filename);
       var task_info = upx.fid+'_'+upx.task_id+'_'+task[1]+'-'+task[2]+'_'+task[3]
       xmlhttp.setRequestHeader("Task-Info",task_info);
+      //xmlhttp.setRequestHeader("Upload-Type","Javascript-Workers");
+      //xmlhttp.setRequestHeader("Content-Type", "multipart/form-data, boundary="+boundary);
       /* 自己组装post 的body
       xmlhttp.setRequestHeader("Content-Type", "multipart/form-data, boundary="+boundary);
       var body = "--" + boundary + "--\r\n";
@@ -73,7 +84,8 @@ function sendbuff (worker_index,url,buff,task,upx){
                     self.postMessage({worker_index:worker_index,status:false});               
                 }
         }
-
+      var post_data = new FormData();
+      //post_data.append('file',buff)
       xmlhttp.send(buff);
         
       //xmlhttp.sendAsBinary(buff);
