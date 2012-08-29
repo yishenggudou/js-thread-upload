@@ -3,10 +3,11 @@ $(document).ready(function(){
      //$('body').prepend(a);
      //https://developer.mozilla.org/en-US/docs/JavaScript_typed_arrays/ArrayBuffer
      //http://robertnyman.com/2010/03/25/using-html5-web-workers-to-have-background-computational-power/
-     var worker = new Worker('/static/js/worker.js');
-     worker.onmessage = function(event) {
-          //console.log("Called back by the worker!\n");
-     };
+    var workers = [1,2,3,4];
+    workers = _.map(workers,function(num){
+                                return new Worker('/static/js/worker.js')
+                                    }
+                )
      $('#filesubmit').click(function(){
          var fileobj = document.getElementById('qsstest').files[0];
          //reader.readAsArrayBuffer(fileobj);
@@ -21,8 +22,9 @@ $(document).ready(function(){
                 success:function(data){
                     console.log(["revice task from serer",data]);
                     var url="http://qss.qiyi.domain/upu";
+                    console.log(["worker pools",workers]);
                     for  (task_id in data.bitmap){
-                        var worker = new Worker('/static/js/worker.js');
+                        var worker = workers[Math.floor(Math.random()*workers.length)];
                         task  = data.bitmap[task_id];
                         data.task_id = task_id;
                         var buff = fileobj.slice(task[1],task[2]);
@@ -33,7 +35,8 @@ $(document).ready(function(){
                         worker.onmessage = function(e){
                             worker_tasks.push(e.data);
                             if (!e.data.status){
-                                worker.postMessage(wrok)
+                                console.log(["has hadle a worker",e])
+                                //worker.postMessage([])
                             }                         
                         }
                     }
